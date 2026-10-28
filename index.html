@@ -1,26 +1,82 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My AI Chatbot</title>
+
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #f3f4f6;
       color: #111827;
+      min-height: 100vh;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: #1d4ed8;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 5%;
+      box-shadow: 0 2px 10px #0001;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
+      text-decoration: none;
+      color: white;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-size: 15px;
+    }
+
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+
+    .nav-button {
+      background: white;
+      color: #1d4ed8;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .nav-button:hover {
+      background: #dbeafe;
+    }
+
+    /* Main chatbot area */
+    .main-content {
       display: grid;
       place-items: center;
-      min-height: 100vh;
+      padding: 24px 0;
     }
 
     .app {
       width: min(600px, 95%);
-      height: 80vh;
+      height: 75vh;
+      min-height: 350px;
       background: white;
       border-radius: 16px;
       display: flex;
@@ -29,7 +85,7 @@
       overflow: hidden;
     }
 
-    header {
+    .chat-header {
       background: #1d4ed8;
       color: white;
       padding: 20px;
@@ -79,7 +135,12 @@
       font-size: 16px;
     }
 
-    button {
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .send-button {
       padding: 12px 18px;
       border: 0;
       border-radius: 8px;
@@ -88,40 +149,102 @@
       cursor: pointer;
     }
 
-    button:disabled { opacity: 0.6; }
+    /* Mobile responsive navbar */
+    @media (max-width: 600px) {
+      .navbar {
+        padding: 14px 4%;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .logo {
+        font-size: 19px;
+      }
+
+      .nav-links {
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .nav-links a {
+        font-size: 13px;
+      }
+
+      .nav-button {
+        padding: 8px 10px;
+      }
+
+      .app {
+        height: 72vh;
+      }
+    }
   </style>
 </head>
-<body>
-  <main class="app">
-    <header>My AI Chatbot</header>
-    <div id="messages" aria-live="polite">
-      <div class="bubble bot">
-        Hello! Ask me anything.
-      </div>
-    </div>
 
-    <form id="chat-form">
-      <input id="message" placeholder="Type a message..."
-             autocomplete="off" maxlength="4000" required>
-      <button id="send" type="submit">Send</button>
-    </form>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="#" class="logo">🤖 AI Chatbot</a>
+
+    <div class="nav-links">
+      <a href="#" id="home-link">Home</a>
+      <a href="#chatbot">Chatbot</a>
+      <a href="#about">About</a>
+      <button class="nav-button" id="new-chat">+ New Chat</button>
+    </div>
+  </nav>
+
+  <!-- Chatbot -->
+  <main class="main-content" id="chatbot">
+    <section class="app">
+      <header class="chat-header">My AI Chatbot</header>
+
+      <div id="messages" aria-live="polite">
+        <div class="bubble bot">
+          Hello! Ask me anything.
+        </div>
+      </div>
+
+      <form id="chat-form">
+        <input
+          id="message"
+          placeholder="Type a message..."
+          autocomplete="off"
+          maxlength="4000"
+          required
+        >
+        <button class="send-button" id="send" type="submit">
+          Send
+        </button>
+      </form>
+    </section>
   </main>
+
+  <!-- About section -->
+  <footer id="about" style="text-align:center; padding:16px; color:#6b7280;">
+    <p>My AI Chatbot — Your assistant for everyday questions.</p>
+  </footer>
 
   <script>
     const form = document.getElementById("chat-form");
     const input = document.getElementById("message");
     const messages = document.getElementById("messages");
     const send = document.getElementById("send");
+    const newChat = document.getElementById("new-chat");
 
     function addMessage(text, type) {
       const bubble = document.createElement("div");
       bubble.className = "bubble " + type;
       bubble.textContent = text;
+
       messages.appendChild(bubble);
       messages.scrollTop = messages.scrollHeight;
+
       return bubble;
     }
 
+    // Send a message to the backend
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
@@ -131,6 +254,7 @@
       addMessage(message, "user");
       input.value = "";
       send.disabled = true;
+
       const loading = addMessage("Thinking...", "bot");
 
       try {
@@ -156,6 +280,30 @@
         input.focus();
       }
     });
+
+    // Start a new conversation in the UI
+    newChat.addEventListener("click", () => {
+      messages.replaceChildren();
+
+      addMessage(
+        "Hello! Ask me anything.",
+        "bot"
+      );
+
+      input.value = "";
+      input.focus();
+    });
+
+    // Home link returns to the top
+    document.getElementById("home-link")
+      .addEventListener("click", (event) => {
+        event.preventDefault();
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+      });
   </script>
+
 </body>
 </html>
